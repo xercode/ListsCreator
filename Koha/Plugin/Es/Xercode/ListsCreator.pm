@@ -230,9 +230,9 @@ sub tool_step2 {
             my $table_log = $self->get_qualified_table_name('log');
             $dbh->do(
                 qq{
-                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? );
+                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error`, `frombatch` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? );
                     }
-                , undef, ( $userid, $shelfnumber, $shelfs_exists, $filename, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error) ));
+                , undef, ( $userid, $shelfnumber, $shelfs_exists, $filename, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error), 0 ));
             };
         
         $template->param(message => "ok");
@@ -398,9 +398,9 @@ sub tool_folder2 {
                 my $table_log = $self->get_qualified_table_name('log');
                 $dbh->do(
                     qq{
-                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? );
+                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error`, `frombatch` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? );
                     }
-                    , undef, ($userid, $shelfnumber, $shelfs_exists, $file, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error)                   ));
+                    , undef, ($userid, $shelfnumber, $shelfs_exists, $file, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error), 1                   ));
                 
                 # Move processed file
                 my $moving = move("$directory/$file","$directory/processed/");
@@ -478,6 +478,7 @@ sub install() {
               `biblios_exists` MEDIUMTEXT DEFAULT NULL,
               `biblios_notexists` MEDIUMTEXT DEFAULT NULL,
               `biblios_error` MEDIUMTEXT DEFAULT NULL,
+              `frombatch` tinyint(4) DEFAULT '0',
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         }
