@@ -1,0 +1,91 @@
+#plugin-configuration > div {
+    margin-bottom: 40px;
+}
+
+.plugin-logo {
+    max-height: 74px;
+}
+
+#toolbar {
+    margin-bottom: 30px;
+}
+
+#table-actions button {
+    margin-left: 15px;
+}
+
+.fa-check {
+    color: green;
+}
+
+.msgalert, .fa-remove, .fa-exclamation {
+    color: red;
+}
+
+#messages {
+    text-align: left;
+    width: 50%;
+    border: 1px solid gray;
+    border-radius: 2px;
+    padding: 10px;
+    margin: 0 auto;
+}
+
+#messages ul > li {
+    list-style: none;
+}
+
+/* ==============================
+   Page loader
+   ============================== */
+
+.page-loader{
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: transparent;
+    z-index: 100;
+    padding: 25px;
+}
+
+.lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #555;
+    border-color: #555 transparent #555 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .large .modal-dialog {
+        width: 700px;
+        margin: 30px auto;
+    }
+
+    .large .modal-content {
+        -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+    }
+
+    .large .modal-sm {
+        width: 300px;
+    }
+}
