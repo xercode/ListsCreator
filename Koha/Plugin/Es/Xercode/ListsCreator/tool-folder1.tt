@@ -17,25 +17,32 @@
 <div id="doc3">
 
     [% IF (enabled) %]
-        <form method="post" id="uploadform" name="uploadform" enctype="multipart/form-data">
-            <input type="hidden" name="class" value="[% CLASS %]"/>
-            <input type="hidden" name="method" value="[% METHOD %]"/>
-            <input type="hidden" name="option" value="manual"/>
-            
-            <fieldset class="rows">
-                <legend><i class="fa fa-file-excel-o"></i> Upload excel file</legend>
-                <ol>
-                    <li>
-                        <label for="excelfile">File to upload: </label>
-                        <input type="file" name="excelfile" id="excelfile" />
-                    </li>
-                </ol>
-            </fieldset>
-            <fieldset class="action">
-                <button id="cancel" class="btn">Cancel</button>
-                <button id="upload" class="btn">Upload and run</button>
-            </fieldset>
-        </form>
+        [% IF (files) %]
+            <form method="post" id="uploadform" name="uploadform" enctype="multipart/form-data">
+                <input type="hidden" name="class" value="[% CLASS %]"/>
+                <input type="hidden" name="method" value="[% METHOD %]"/>
+                <input type="hidden" name="option" value="folder"/>
+
+                <fieldset class="rows">
+                    <legend><i class="fa fa-file-excel-o"></i> Files to process</legend>
+                    <ol>
+                        [% FOREACH file IN files %]
+                            <li>
+                                [% file %]
+                                <input type="hidden" name="excelfiles" value="[% file %]"/>
+                            </li>
+                        [% END %]
+                    </ol>
+                </fieldset>
+                <fieldset class="action">
+                    <button id="cancel" class="btn">Cancel</button>
+                    <button id="upload" class="btn">Process this files</button>
+                </fieldset>
+            </form>
+        [% ELSE %]
+            <div class="dialog alert">There is no files to process in batch. Please, upload them first using an FTP. <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool">Click here to return.</a></div>
+        [% END %]
+
     [% ELSE %]
         <div class="dialog alert">The plugin is not yet enabled. Please contact with the administrator if you want to use it.</div>
     [% END %]

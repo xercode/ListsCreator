@@ -4,6 +4,7 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
+use utf8;
 use C4::Context;
 use C4::Members;
 use C4::Biblio;
@@ -60,11 +61,42 @@ sub tool {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
     
-    my $excelfile = $cgi->param('excelfile');
-    unless ($excelfile){
-        $self->tool_step1();
+    my $option = $cgi->param('option');
+    if ($option eq "folder"){
+        my $excelfiles = $cgi->param('excelfiles');
+        unless ($excelfiles){
+            $self->tool_folder1();
+        }else{
+            $self->tool_folder2();
+        }
+    }elsif ($option eq "manual"){
+        my $excelfile = $cgi->param('excelfile');
+        unless ($excelfile){
+            $self->tool_step1();
+        }else{
+            $self->tool_step2();
+        }
     }else{
-        $self->tool_step2();
+        my $template = $self->get_template( { file => 'tool.tt' } );
+        if ( $self->retrieve_data('enabled') ) {
+            $template->param(enabled => 1);
+        }
+
+        my ($volume, $directory, $file) = File::Spec->splitpath(__FILE__);
+        $directory .= "BatchUploadDir/processed";
+        
+        unless (-d $directory) {
+            $template->param(directory_processed_removed => 1);
+        }
+        
+        print $cgi->header(
+            {
+                -type     => 'text/html',
+                -charset  => 'UTF-8',
+                -encoding => "UTF-8"
+            }
+        );
+        print $template->output();
     }
 }
 
@@ -217,6 +249,176 @@ sub tool_step2 {
     );
     print $template->output();
 
+}
+
+sub tool_folder1 {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    my $template = $self->get_template( { file => 'tool-folder1.tt' } );
+
+    if ( $self->retrieve_data('enabled') ) {
+        $template->param(enabled => 1);
+    }
+    
+    my ($volume, $directory, $file) = File::Spec->splitpath(__FILE__);
+    $directory .= "BatchUploadDir";
+    if ( opendir ( my $dh, $directory ) ) {
+        my @files = grep { /\.(xls|xlsx)$/i } readdir( $dh );
+        closedir $dh;
+        @files = sort(@files);
+        foreach (@files){
+            $_ = Encode::decode_utf8($_);
+        }
+        $template->param(files => \@files);
+    } else {
+        warn "unable to opendir $directory: $!";
+        return;
+    }
+
+    print $cgi->header(
+        {
+            -type     => 'text/html',
+            -charset  => 'UTF-8',
+            -encoding => "UTF-8"
+        }
+    );
+    print $template->output();
+}
+
+sub tool_folder2 {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    my $userid = C4::Context->userenv ? C4::Context->userenv->{number} : undef;
+    my $template = $self->get_template( { file => 'tool-folder2.tt' } );
+
+    if ( $self->retrieve_data('enabled') ) {
+        $template->param(enabled => 1);
+    }
+
+    my ($volume, $directory, $file) = File::Spec->splitpath(__FILE__);
+    $directory .= "BatchUploadDir";
+    my @files;
+    if ( opendir ( my $dh, $directory ) ) {
+        @files = grep { /\.(xls|xlsx)$/i } readdir( $dh );
+        closedir $dh;
+        @files = sort(@files);
+    } else {
+        warn "unable to opendir $directory: $!";
+        return;
+    }
+    
+    if (@files) {
+        my @processedfiles;
+        foreach my $file ( @files ){
+            my $books = ReadData("$directory/$file", attr => 1);
+
+            foreach my $book (@{$books}) {
+
+                unless ($book->{label}) {
+                    next;
+                }
+
+                my @messages;
+                my @biblios_add;
+                my @biblios_exists;
+                my @biblios_notexists;
+                my @biblios_error;
+                my $continue = 1;
+                my $maxrow = $book->{maxrow};
+                my $f = 2;
+
+                my $shelfname = $book->{cell}[1][1];
+                my $shelfnumber = undef;
+                # Check if the list exists by its name
+                my $shelf = undef;
+                my $shelfs_exists = 0;
+                my $_shelf = GetShelfByName($shelfname);
+                unless ($_shelf) {
+                    my $sortfield = $self->retrieve_data('sortfield');
+                    my $category = $self->retrieve_data('category');
+                    my $allow_changes_from = $self->retrieve_data('allow_changes_from');
+
+                    $shelf = Koha::Virtualshelf->new(
+                        { shelfname                  => $shelfname,
+                            sortfield                => $sortfield,
+                            category                 => $category || 1,
+                            allow_change_from_owner  => $allow_changes_from > 0,
+                            allow_change_from_others => $allow_changes_from == ANYONE,
+                            owner                    => $userid,
+                        }
+                    );
+                    $shelf->store;
+                    $shelfnumber = $shelf->shelfnumber;
+
+                }
+                else {
+                    $shelfnumber = $_shelf->{shelfnumber};
+                    $shelf = Koha::Virtualshelves->find($shelfnumber);
+                    $shelfs_exists = 1;
+                }
+
+                while ($continue) {
+
+                    my ($biblionumber) = $book->{cell}[1][$f] =~ /biblionumber=([0-9]+)/;
+                    if (defined $biblionumber) {
+                        my $biblio = Koha::Biblios->find($biblionumber);
+
+                        if ($biblio) {
+                            my $added = eval {$shelf->add_biblio($biblionumber, $userid);};
+                            if ($@) {
+                                push @messages, { biblionumber => $biblionumber, type => 'alert', code => ref($@), text => $@ };
+                                push @biblios_error, $biblionumber;
+                            }
+                            elsif ($added) {
+                                push @messages, { biblionumber => $biblionumber, type => 'message', code => 'success_on_add_biblio' };
+                                push @biblios_add, $biblionumber;
+                            }
+                            else {
+                                push @messages, { biblionumber => $biblionumber, type => 'message', code => 'error_on_add_biblio' };
+                                push @biblios_exists, $biblionumber;
+                            }
+                        }
+                        else {
+                            push @messages, { biblionumber => $biblionumber, type => 'message', code => 'biblio_does_not_exists' };
+                            push @biblios_notexists, $biblionumber;
+                        }
+                    }
+
+                    $f++;
+
+                    if ($f > $maxrow) {
+                        $continue = 0;
+                    }
+                }
+
+                push @processedfiles, {shelf_exists => $shelfs_exists, shelfnumber => $shelfnumber, messages => \@messages};
+
+                my $table_log = $self->get_qualified_table_name('log');
+                $dbh->do(
+                    qq{
+                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? );
+                    }
+                    , undef, ($userid, $shelfnumber, $shelfs_exists, $file, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error)                   ));
+                
+                # Move processed file
+                my $moving = move("$directory/$file","$directory/processed/");
+            }
+        }
+
+        $template->param('processedfiles', \@processedfiles);
+        $template->param('totalprocessedfiles', scalar (@processedfiles));
+    }
+    
+    print $cgi->header(
+        {
+            -type     => 'text/html',
+            -charset  => 'UTF-8',
+            -encoding => "UTF-8"
+        }
+    );
+    print $template->output();
 }
 
 sub configure {

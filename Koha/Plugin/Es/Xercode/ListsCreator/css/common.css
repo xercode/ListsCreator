@@ -35,6 +35,18 @@
     list-style: none;
 }
 
+.tool-folder-1 .col-md-4 {
+    text-align: center;
+}
+
+.tool-folder-1 .col-md-4 a {
+    display: block;
+    border: 1px solid gray;
+    border-radius: 4px;
+    width: 293px;
+    padding: 30px;
+}
+
 /* ==============================
    Page loader
    ============================== */

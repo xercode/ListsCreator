@@ -1,0 +1,83 @@
+[% USE raw %]
+[% USE Asset %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+<title>Lists Creator Plugin</title>
+
+[% INCLUDE 'doc-head-close.inc' %]
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/common.css'>
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/jquery.dataTables.min.css'>
+
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=tool">Plugins</a> &rsaquo; Lists Creator &rsaquo; Run</div>
+
+<div id="doc3">
+    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool&option=folder"><< Process more files</a>
+    [% IF (enabled) %]
+        
+        [% IF totalprocessedfiles %]
+            <h4>[% totalprocessedfiles %] has been processed</h4>
+        [% END %]
+        
+        [% FOREACH processedfile IN processedfiles %]
+            <div class="dialog message">
+                    File uploaded and processed sucessfuly. <a href="/cgi-bin/koha/virtualshelves/shelves.pl?op=view&shelfnumber=[% processedfile.shelfnumber %]" target="_blank">[% IF (processedfile.shelf_exists) %]This shelf exists previosly and was updated.[% ELSE %]A new shelf was created.[% END %]</a>
+            </div>
+            
+            [% IF (processedfile.messages) %]
+                <div id="messages">
+                    <ul>
+                        [% FOREACH msg IN processedfile.messages %]
+                            <li>
+                                <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% msg.biblionumber %]" target="_blank">[% msg.biblionumber %]</a>:
+                                [% IF msg.type == 'message' %]
+                                    [% IF msg.code == 'success_on_add_biblio' %]<i class="fa fa-check"></i>[% END %]
+                                    [% IF msg.code == 'error_on_add_biblio' %]<i class="fa fa-remove"></i> This biblio already exists in this shelf[% END %]
+                                    [% IF msg.code == 'biblio_does_not_exists' %]<span class="msgalert"><i class="fa fa-exclamation"></i> This biblio does not exists</span>[% END %]
+                                [% ELSE %]
+                                    <span class="msgalert"><i class="fa fa-exclamation"></i> ERROR CODE: [% msg.code %] ERROR MESSAGE: [% msg.text %]</span>
+                                [% END %]
+
+                            </li>
+                        [% END %]
+                    </ul>
+                </div>
+            [% ELSE %]
+                <div class="dialog message">There is no biblios on this excel file</div>
+            [% END %]
+            
+        [% END %]
+    [% ELSE %]
+        <div class="dialog alert">The plugin is not yet enabled. Please contact with the administrator if you want to use it.</div>
+    [% END %]
+        
+</div>
+
+<div class="page-loader">
+    <div class="lds-dual-ring"></div>
+</div>
+
+[% MACRO jsinclude BLOCK %]
+    [% INCLUDE 'datatables.inc' %]
+<script>
+    $(document).ready(function() {
+        $(".page-loader").hide();
+        
+        $('#cancel').on('click', function(e){
+            e.preventDefault();
+            window.location.href = '/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool';
+        });
+
+        $('#upload').on('click', function(e){
+            e.preventDefault();
+            $(".page-loader").show();
+            $( "#uploadform" ).submit();
+        });
+    });
+</script>
+[% END %]
+<!-- Footer-->
+[% INCLUDE 'intranet-bottom.inc' %]

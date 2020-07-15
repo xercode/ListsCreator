@@ -15,7 +15,7 @@
 <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=tool">Plugins</a> &rsaquo; Lists Creator &rsaquo; Run</div>
 
 <div id="doc3">
-    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool"><< Upload another file</a>
+    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool&option=manual"><< Upload another file</a>
     [% IF (error) %]
         <div class="dialog alert">
             [% IF (error == 'not_an_excel_file') %]

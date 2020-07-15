@@ -1,0 +1,55 @@
+[% USE raw %]
+[% USE Asset %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+<title>Lists Creator Plugin</title>
+
+[% INCLUDE 'doc-head-close.inc' %]
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/common.css'>
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/jquery.dataTables.min.css'>
+
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=tool">Plugins</a> &rsaquo; Lists Creator &rsaquo; Run</div>
+
+<div id="doc3" class="tool-folder-1">
+    [% IF (enabled) %]
+        [% IF (directory_processed_removed) %]
+            <div class="dialog alert">The directory "processed" has been removed. Please, create a directory named "processed" and add the correct permissions.</div>
+        [% ELSE %]
+            <div class="row">
+                <div class="col-md-2">
+                </div>
+                <div class="col-md-4">
+                    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool&option=folder"><i class="fa fa-folder-o"></i> Batch from folder</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AListsCreator&method=tool&option=manual"><i class="fa fa-file-excel-o"></i> Upload an excel manually</a>
+                </div>
+                <div class="col-md-2">
+                </div>
+            </div>
+        [% END %]
+
+    [% ELSE %]
+        <div class="dialog alert">The plugin is not yet enabled. Please contact with the administrator if you want to use it.</div>
+    [% END %]
+        
+</div>
+
+<div class="page-loader">
+    <div class="lds-dual-ring"></div>
+</div>
+
+[% MACRO jsinclude BLOCK %]
+    [% INCLUDE 'datatables.inc' %]
+<script>
+    $(document).ready(function() {
+        $(".page-loader").hide();
+    });
+</script>
+[% END %]
+<!-- Footer-->
+[% INCLUDE 'intranet-bottom.inc' %]
