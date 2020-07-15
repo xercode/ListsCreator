@@ -393,7 +393,7 @@ sub tool_folder2 {
                     }
                 }
 
-                push @processedfiles, {shelf_exists => $shelfs_exists, shelfnumber => $shelfnumber, messages => \@messages};
+                push @processedfiles, {shelf_exists => $shelfs_exists, shelfnumber => $shelfnumber, messages => \@messages, numbiblios => scalar(@messages), filename => Encode::decode_utf8($file)};
 
                 my $table_log = $self->get_qualified_table_name('log');
                 $dbh->do(

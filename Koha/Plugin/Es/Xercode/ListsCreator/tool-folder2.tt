@@ -24,24 +24,28 @@
         
         [% FOREACH processedfile IN processedfiles %]
             <div class="dialog message">
-                    File uploaded and processed sucessfuly. <a href="/cgi-bin/koha/virtualshelves/shelves.pl?op=view&shelfnumber=[% processedfile.shelfnumber %]" target="_blank">[% IF (processedfile.shelf_exists) %]This shelf exists previosly and was updated.[% ELSE %]A new shelf was created.[% END %]</a>
+                    File "<i>[% processedfile.filename %]</i>" uploaded and processed sucessfuly. <a href="/cgi-bin/koha/virtualshelves/shelves.pl?op=view&shelfnumber=[% processedfile.shelfnumber %]" target="_blank">[% IF (processedfile.shelf_exists) %]This shelf exists previosly and was updated.[% ELSE %]A new shelf was created.[% END %]</a>
             </div>
             
             [% IF (processedfile.messages) %]
                 <div id="messages">
                     <ul>
-                        [% FOREACH msg IN processedfile.messages %]
-                            <li>
-                                <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% msg.biblionumber %]" target="_blank">[% msg.biblionumber %]</a>:
-                                [% IF msg.type == 'message' %]
-                                    [% IF msg.code == 'success_on_add_biblio' %]<i class="fa fa-check"></i>[% END %]
-                                    [% IF msg.code == 'error_on_add_biblio' %]<i class="fa fa-remove"></i> This biblio already exists in this shelf[% END %]
-                                    [% IF msg.code == 'biblio_does_not_exists' %]<span class="msgalert"><i class="fa fa-exclamation"></i> This biblio does not exists</span>[% END %]
-                                [% ELSE %]
-                                    <span class="msgalert"><i class="fa fa-exclamation"></i> ERROR CODE: [% msg.code %] ERROR MESSAGE: [% msg.text %]</span>
-                                [% END %]
-
-                            </li>
+                        [% IF (processedfile.numbiblios) %]
+                            [% FOREACH msg IN processedfile.messages %]
+                                <li>
+                                    <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% msg.biblionumber %]" target="_blank">[% msg.biblionumber %]</a>:
+                                    [% IF msg.type == 'message' %]
+                                        [% IF msg.code == 'success_on_add_biblio' %]<i class="fa fa-check"></i>[% END %]
+                                        [% IF msg.code == 'error_on_add_biblio' %]<i class="fa fa-remove"></i> This biblio already exists in this shelf[% END %]
+                                        [% IF msg.code == 'biblio_does_not_exists' %]<span class="msgalert"><i class="fa fa-exclamation"></i> This biblio does not exists</span>[% END %]
+                                    [% ELSE %]
+                                        <span class="msgalert"><i class="fa fa-exclamation"></i> ERROR CODE: [% msg.code %] ERROR MESSAGE: [% msg.text %]</span>
+                                    [% END %]
+    
+                                </li>
+                            [% END %]
+                        [% ELSE %]
+                            <span><i class="fa fa-exclamation"></i> There are no biblionumbers in this file</span>
                         [% END %]
                     </ul>
                 </div>
