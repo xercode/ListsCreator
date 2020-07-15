@@ -36,7 +36,7 @@
                 </fieldset>
                 <fieldset class="action">
                     <button id="cancel" class="btn">Cancel</button>
-                    <button id="upload" class="btn">Process this files</button>
+                    <button id="upload" class="btn">Process these files</button>
                 </fieldset>
             </form>
         [% ELSE %]
