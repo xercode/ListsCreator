@@ -71,13 +71,27 @@
                     <li>
                         <label for="allow_changes_from">Allow changes to contents from: </label>
                         <select name="allow_changes_from" id="allow_changes_from">
-                            [% IF allow_changes_from == "0" %]<option value="0" selected="selected">Nobody</option>[% ELSE %]<option value="0">Nobody</option>[% END %]
-                            [% IF allow_changes_from == "1" %]
-                                <option value="1" selected="selected">Owner only</option>
+                            [% IF allow_changes_from != "-1" %]
+                                [% IF allow_changes_from == "0" %]
+                                    <option value="0" selected="selected">Nobody</option>
+                                [% ELSE %]
+                                    <option value="0">Nobody</option>
+                                [% END %]
+                                [% IF allow_changes_from == "1" %]
+                                    <option value="1" selected="selected">Owner only</option>
+                                [% ELSE %]
+                                    <option value="1">Owner only</option>
+                                [% END %]
+                                [% IF allow_changes_from == "2" %]
+                                    <option value="2" selected="selected">Anyone seeing this list</option>
+                                [% ELSE %]
+                                    <option value="2">Anyone seeing this list</option>
+                                [% END %]
                             [% ELSE %]
-                                <option value="1">Owner only</option>
+                                <option value="0">Nobody</option>
+                                <option value="1" selected="selected">Owner only</option>
+                                <option value="2">Anyone seeing this list</option>
                             [% END %]
-                            [% IF allow_changes_from == "2" %]<option value="2" selected="selected">Anyone seeing this list</option>[% ELSE %]<option value="2">Anyone seeing this list</option>[% END %]
                         </select>
                     </li>
                     <li>

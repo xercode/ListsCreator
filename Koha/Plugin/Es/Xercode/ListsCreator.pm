@@ -230,7 +230,7 @@ sub tool_step2 {
             my $table_log = $self->get_qualified_table_name('log');
             $dbh->do(
                 qq{
-                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error`, `frombatch` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? );
+                    INSERT INTO $table_log (`borrowernumber`, `shelfnumber`, `shelf_already_exists`, `filename`, `biblios_add`, `biblios_exists`, `biblios_notexists`, `biblios_error`, `frombatch` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? );
                     }
                 , undef, ( $userid, $shelfnumber, $shelfs_exists, $filename, join(',', @biblios_add), join(',', @biblios_exists), join(',', @biblios_notexists), join(',', @biblios_error), 0 ));
             };
@@ -441,10 +441,15 @@ sub configure {
     else {
         my $template = $self->get_template( { file => 'configure.tt' } );
 
+        my $allowchangesfrom = $self->retrieve_data('allow_changes_from');
+        unless (defined $allowchangesfrom){
+            $allowchangesfrom = -1;
+        }
+
         $template->param(
             enabled               => $self->retrieve_data('enabled'),
             sortfield             => $self->retrieve_data('sortfield'),
-            allow_changes_from    => $self->retrieve_data('allow_changes_from'),
+            allow_changes_from    => $allowchangesfrom,
             category              => $self->retrieve_data('category'),
         );
         
